@@ -1,3 +1,0 @@
-/Users/admin/Documents/0x0/Repositories/tsp/build/CMakeFiles/tsp.dir
-/Users/admin/Documents/0x0/Repositories/tsp/build/CMakeFiles/ALL_BUILD.dir
-/Users/admin/Documents/0x0/Repositories/tsp/build/CMakeFiles/ZERO_CHECK.dir
