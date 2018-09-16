@@ -68,8 +68,18 @@ bool	operator !=(const vertex<float_type>& vertex_a, const vertex<float_type>& v
 template	<typename float_type>
 std::ostream&	operator <<(std::ostream& ostr, const vertex<float_type>& vertex)
 {
-	ostr << "vertex(\"" << vertex.name() << "\", " << vertex.edges().size();
-	ostr << (vertex.edges().size() == 1 ? " edge)" : " edges)");
+	std::string	str;
+	str += "vertex(\"" + vertex.name() + "\", links to: ";
+	for (const auto& edge : vertex.edges())
+	{
+		if (edge.get().to().name() == vertex.name())
+			str += "self, ";
+		else
+			str += edge.get().to().name() + ", ";
+	}
+	str = str.substr(0, str.length() - 2);
+	str += ")";
+	ostr << str;
 	return ostr;
 }
 

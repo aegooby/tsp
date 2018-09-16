@@ -37,14 +37,18 @@ class	vertex;
 class	__graph_private
 {
 private:
-	template	<typename float_type>
+	template	<typename float_type, typename key_type>
 	class	__graph_base;
 public:
-	template	<typename float_type>
+	template	<typename float_type, typename key_type>
 	friend class	graph;
+	template	<typename float_type, typename key_type>
+	friend class	digraph;
 };
 
-template	<typename float_type>
+template	<typename float_type, typename key_type>
 class	graph;
+template	<typename float_type, typename key_type>
+class	digraph;
 
 __end_ns_tsp

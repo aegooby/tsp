@@ -21,16 +21,16 @@ public:
 	: __vertex_pair(pair) {  }
 	__edge_base(const std::pair<vertex<float_type>&, vertex<float_type>&>& pair, float_type weight)
 	: __weight(weight), __vertex_pair(pair) {  }
-	__edge_base(vertex<float_type>& vertex_a, vertex<float_type>& vertex_b)
-	: __vertex_pair(vertex_a, vertex_b)
+	__edge_base(vertex<float_type>& from, vertex<float_type>& to)
+	: __vertex_pair(from, to)
 	{
-		if (vertex_a == vertex_b)
+		if (from == to)
 			__weight = inf<float_type>;
 	}
-	__edge_base(vertex<float_type>& vertex_a, vertex<float_type>& vertex_b, float_type weight)
-	: __weight(weight), __vertex_pair(vertex_a, vertex_b)
+	__edge_base(vertex<float_type>& from, vertex<float_type>& to, float_type weight)
+	: __weight(weight), __vertex_pair(from, to)
 	{
-		if (vertex_a == vertex_b)
+		if (from == to)
 			__weight = inf<float_type>;
 	}
 	__attribute__((always_inline))
@@ -38,15 +38,13 @@ public:
 	__attribute__((always_inline))
 	const auto&	vertex_pair() const	{ return __vertex_pair; }
 	__attribute__((always_inline))
-	float_type	weight() const
-	{
-		return __weight;
-	}
+	const auto&	from() const	{ return __vertex_pair.first; }
 	__attribute__((always_inline))
-	void	weight(int weight)
-	{
-		__weight = tsp::abs(weight);
-	}
+	const auto&	to() const	{ return __vertex_pair.second; }
+	__attribute__((always_inline))
+	float_type	weight() const	{ return __weight; }
+	__attribute__((always_inline))
+	void	weight(int weight)	{ __weight = tsp::abs(weight); }
 };
 
 template	<typename __float_type>
@@ -60,15 +58,11 @@ private:
 	void	__link_edges(const std::pair<vertex<float_type>&, vertex<float_type>&>& pair)
 	{
 		pair.first.add_edge(*this);
-		if (pair.first != pair.second)
-			pair.second.add_edge(*this);
 	}
 	__attribute__((always_inline))
 	void	__unlink_edges(const std::pair<vertex<float_type>&, vertex<float_type>&>& pair)
 	{
 		pair.first.remove_edge(*this);
-		if (pair.first != pair.second)
-			pair.second.remove_edge(*this);
 	}
 public:
 	edge(const std::pair<vertex<float_type>&, vertex<float_type>&>& pair)
@@ -81,13 +75,13 @@ public:
 	{
 		__link_edges(__base::__vertex_pair);
 	}
-	edge(vertex<float_type>& vertex_a, vertex<float_type>& vertex_b)
-	: __base(vertex_a, vertex_b)
+	edge(vertex<float_type>& from, vertex<float_type>& to)
+	: __base(from, to)
 	{
 		__link_edges(__base::__vertex_pair);
 	}
-	edge(vertex<float_type>& vertex_a, vertex<float_type>& vertex_b, float_type weight)
-	: __base(vertex_a, vertex_b, weight)
+	edge(vertex<float_type>& from, vertex<float_type>& to, float_type weight)
+	: __base(from, to, weight)
 	{
 		__link_edges(__base::__vertex_pair);
 	}
@@ -119,7 +113,7 @@ bool	operator !=(const edge<float_type>& edge_a, const edge<float_type>& edge_b)
 template	<typename float_type>
 std::ostream&	operator <<(std::ostream& ostr, const edge<float_type>& edge)
 {
-	ostr << "edge(" << edge.vertex_pair().first.name() << " <-> " << edge.vertex_pair().first.name() << ")";
+	ostr << "edge(" << edge.from().name() << " -> " << edge.to().name() << ", weight: " << edge.weight() << ")";
 	return ostr;
 }
 
