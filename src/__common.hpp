@@ -56,4 +56,33 @@ avg(value_type value, types ... values)
 	return __sum;
 }
 
+constexpr size_t	factorial(size_t value)
+{
+	static_assert(sizeof(size_t) == 8);
+	if (value > 20)
+		throw std::domain_error("Factorial is too large to compute");
+	return (!value ? 1 : value * factorial(value - 1));
+}
+
+template	<typename string_type>
+constexpr size_t str_hash(const string_type& string)
+{
+	static_assert(sizeof(size_t) == 8);
+	size_t	__result = 0xcbf29ce484222325;
+	
+	for (char character : string)
+	{
+		__result *= 1099511628211;
+		__result ^= character;
+	}
+	
+	return	__result;
+}
+
+template	<size_t length>
+constexpr size_t str_hash(const char (&string)[length])
+{
+	return str_hash(std::string_view(string));
+}
+
 __end_ns_tsp

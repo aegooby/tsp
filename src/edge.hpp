@@ -14,6 +14,7 @@ class	__edge_private::__edge_base
 public:
 	using float_type = __float_type;
 protected:
+	bool												__visited = false;
 	float_type											__weight = float_type();
 	std::pair<vertex<float_type>&, vertex<float_type>&>	__vertex_pair;
 public:
@@ -33,6 +34,10 @@ public:
 		if (from == to)
 			__weight = inf<float_type>;
 	}
+	__attribute__((always_inline))
+	bool	visited() const	{ return __visited; }
+	__attribute__((always_inline))
+	void	visited(bool visited)	{ __visited = visited; }
 	__attribute__((always_inline))
 	bool	self_edge() const	{ return (__vertex_pair.first == __vertex_pair.second); }
 	__attribute__((always_inline))

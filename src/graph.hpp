@@ -18,6 +18,7 @@ public:
 	using float_type = __float_type;
 	using key_type = __key_type;
 protected:
+	bool												__traversed = false;
 	std::list<edge<float_type>>							__edges;
 	std::unordered_map<key_type, vertex<float_type>>	__vertices;
 	
@@ -50,6 +51,12 @@ public:
 							  return (edge.self_edge());
 						  });
 	}
+	__attribute__((always_inline))
+	bool	traversed() const	{ __traversed; }
+	__attribute__((always_inline))
+	void	traversed(bool traversed)	{ __traversed = traversed; }
+	__attribute__((always_inline))
+	size_t	size() const	{ return __vertices.size(); }
 	__attribute__((always_inline))
 	const auto&	edges() const	{ return __edges; }
 	__attribute__((always_inline))
