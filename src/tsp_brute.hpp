@@ -1,6 +1,7 @@
 
 #include	"__common.hpp"
 #include	"graph.hpp"
+#include	"tree.hpp"
 #include	<vector>
 
 __begin_ns_tsp

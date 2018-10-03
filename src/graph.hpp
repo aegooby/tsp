@@ -4,9 +4,11 @@
 #include	"__base.hpp"
 #include	"vertex.hpp"
 #include	"edge.hpp"
+#include	"hash.hpp"
 #include	<list>
 #include	<vector>
 #include	<unordered_map>
+#include	<unordered_set>
 
 __begin_ns_tsp
 
@@ -18,26 +20,35 @@ public:
 	using float_type = __float_type;
 	using key_type = __key_type;
 protected:
-	bool												__traversed = false;
-	std::list<edge<float_type>>							__edges;
-	std::unordered_map<key_type, vertex<float_type>>	__vertices;
+	using edge_type = edge<float_type, key_type>;
+	std::unordered_set<edge_type, hash_class<edge_type>>		__edges;
+	std::unordered_map<key_type, vertex<float_type, key_type>>	__vertices;
 	
-	__attribute__((always_inline))
+	inline __attribute__((always_inline))
 	void	__add_one_edge(const key_type& from, const key_type& to, float_type weight)
 	{
-		if (from == to)
-			throw std::invalid_argument("Cannot manually create self-edge");
-		__edges.emplace_back(edge<float_type>(__vertices.at(from), __vertices.at(to), weight));
+		if (__edges.count(tsp::edge<float_type, key_type>(__vertices.at(from), __vertices.at(to))))
+			throw std::invalid_argument("Edge already exists");
+		__edges.emplace(__vertices.at(from), __vertices.at(to), weight);
+		for (auto& edge : __edges)
+		{
+			if (edge.from() == __vertices.at(from) && edge.to() == __vertices.at(to))
+			{
+				const_cast<edge_type&>(edge).link();
+			}
+		}
 	}
-	__attribute__((always_inline))
+	inline __attribute__((always_inline))
 	void	__remove_one_edge(const key_type& from, const key_type& to)
 	{
-		__edges.remove_if([this, &from, &to](const edge<float_type>& edge)
-						  {
-							  return (from != to &&
-									  __vertices.at(from) == edge.from() &&
-									  __vertices.at(to) == edge.to());
-						  });
+		for (auto& edge : __edges)
+		{
+			if (edge.from() == __vertices.at(from) && edge.to() == __vertices.at(to))
+			{
+				const_cast<edge_type&>(edge).unlink();
+				__edges.erase(edge);
+			}
+		}
 	}
 public:
 	__graph_base(size_t size)
@@ -46,35 +57,52 @@ public:
 	}
 	~__graph_base()
 	{
-		__edges.remove_if([](const edge<float_type>& edge)
-						  {
-							  return (edge.self_edge());
-						  });
+		__edges.clear();
 	}
 	__attribute__((always_inline))
-	bool	traversed() const	{ __traversed; }
+	const vertex<float_type, key_type>&	vertex(const key_type& key) const
+	{
+		return __vertices.at(key);
+	}
 	__attribute__((always_inline))
-	void	traversed(bool traversed)	{ __traversed = traversed; }
+	const edge<float_type, key_type>&	edge(const key_type& from, const key_type& to) const
+	{
+		for (auto& edge : __edges)
+		{
+			if (edge.from() == __vertices.at(from) && edge.to() == __vertices.at(to))
+			{
+				return edge;
+			}
+		}
+		throw std::out_of_range("Edge does not exist");
+	}
 	__attribute__((always_inline))
-	size_t	size() const	{ return __vertices.size(); }
+	size_t	size() const
+	{
+		return __vertices.size();
+	}
 	__attribute__((always_inline))
-	const auto&	edges() const	{ return __edges; }
+	const auto&	edges() const
+	{
+		return __edges;
+	}
 	__attribute__((always_inline))
-	const auto& vertices() const	{ return __vertices; }
+	const auto& vertices() const
+	{
+		return __vertices;
+	}
 	__attribute__((always_inline))
 	void	add_vertex(const key_type& key)
 	{
-		__vertices.emplace(key, vertex<float_type>(std::to_string(key)));
-		__edges.emplace_back(edge<float_type>(__vertices.at(key), __vertices.at(key)));
+		if (__vertices.count(key))
+			throw std::invalid_argument("Vertex with this name already exists");
+		__vertices.emplace(key, key);
+		__add_one_edge(key, key, inf<float_type>);
 	}
 	__attribute__((always_inline))
 	void	remove_vertex(const key_type& key)
 	{
-		__edges.remove_if([this, &key](const edge<float_type>& edge)
-						  {
-							  return ((edge.from() == __vertices.at(key) &&
-									   edge.to() == __vertices.at(key)));
-						  });
+		__remove_one_edge(key, key);
 		__vertices.erase(__vertices.at(key));
 	}
 };
@@ -86,16 +114,40 @@ public:
 	using __base = __graph_private::__graph_base<__float_type, __key_type>;
 	using float_type = typename __base::float_type;
 	using key_type = typename __base::key_type;
+	template	<typename float_type, typename key_type>
+	friend class	tree;
+protected:
+	inline __attribute__((always_inline))
+	void	visit(const std::vector<key_type>& keys)
+	{
+		for (auto& key : keys)
+		{
+			__base::__vertices.at(key).visit(true);
+		}
+	}
+	inline __attribute__((always_inline))
+	void	clear_visit()
+	{
+		for (auto& vertex : __base::__vertices)
+		{
+			vertex.second.visit(false);
+		}
+	}
+public:
 	graph(size_t size) : __base(size) {  }
 	__attribute__((always_inline))
 	void	add_edge(const key_type& from_to, const key_type& to_from, float_type weight)
 	{
+		if (from_to == to_from)
+			throw std::invalid_argument("Cannot manually create self-edge");
 		__base::__add_one_edge(from_to, to_from, weight);
 		__base::__add_one_edge(to_from, from_to, weight);
 	}
 	__attribute__((always_inline))
 	void	remove_edge(const key_type& from_to, const key_type& to_from)
 	{
+		if (from_to == to_from)
+			throw std::invalid_argument("Cannot manually remove self-edge");
 		__base::__remove_one_edge(from_to, to_from);
 		__base::__remove_one_edge(to_from, from_to);
 	}
@@ -112,11 +164,15 @@ public:
 	__attribute__((always_inline))
 	void	add_edge(const key_type& from, const key_type& to, float_type weight)
 	{
+		if (from == to)
+			throw std::invalid_argument("Cannot manually create self-edge");
 		__base::__add_one_edge(from, to, weight);
 	}
 	__attribute__((always_inline))
 	void	remove_edge(const key_type& from, const key_type& to)
 	{
+		if (from == to)
+			throw std::invalid_argument("Cannot manually remove self-edge");
 		__base::__remove_one_edge(from, to);
 	}
 };
