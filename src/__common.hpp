@@ -75,4 +75,14 @@ auto	contains(const container_type& container, const value_type& value) -> declt
 	return false;
 }
 
+template	<typename type>
+struct	is_stringy : public std::false_type {  };
+template	<>
+struct is_stringy<std::string> : public std::true_type {  };
+template	<>
+struct is_stringy<const char*> : public std::true_type {  };
+
+template	<typename type>
+constexpr bool	is_stringy_v = is_stringy<type>::value;
+
 __end_ns_tsp

@@ -156,6 +156,52 @@ public:
 		__base::__remove_one_edge(from_to, to_from);
 		__base::__remove_one_edge(to_from, from_to);
 	}
+	template	<typename function_t>
+	std::enable_if_t<is_stringy_v<key_type>, std::string>	tsp(const key_type& start, function_t function)
+	{
+		std::string	str;
+		tsp::tree<float_type, key_type>	tree(*this, start, function);
+		float_type	__minweight = inf<float_type>;
+		tsp::node<float_type, key_type>*	__node = nullptr;
+		for (auto& node : tree.nodes())
+		{
+			if (node.leaf() && node.lineage().size() == __base::size() && node.lineage_weight() < __minweight)
+			{
+				__minweight = node.lineage_weight();
+				__node = const_cast<tsp::node<float_type, key_type>*>(&node);
+			}
+		}
+		str += "(" + std::to_string(__node->lineage_weight()) + ")\t";
+		for (auto& pt : __node->lineage())
+		{
+			str += std::string(pt) + "< ";
+		}
+		str = str.substr(0, str.length() - 2);
+		return str;
+	}
+//	template	<typename function_t>
+//	std::enable_if_t<!is_stringy_v<key_type>, std::string>	tsp(const key_type& start, function_t function)
+//	{
+//		std::string	str;
+//		tsp::tree<float_type, key_type>	tree(*this, start, function);
+//		float_type	__minweight = inf<float_type>;
+//		tsp::node<float_type, key_type>*	__node = nullptr;
+//		for (auto& node : tree.nodes())
+//		{
+//			if (node.leaf() && node.lineage().size() == __base::size() && node.lineage_weight() < __minweight)
+//			{
+//				__minweight = node.lineage_weight();
+//				__node = &node;
+//			}
+//		}
+//		str += "(" + std::to_string(__node->lineage_weight()) + ")\t";
+//		for (auto& pt : __node->lineage())
+//		{
+//			str += std::to_string(pt) + "< ";
+//		}
+//		str = str.substr(0, str.length() - 2);
+//		return str;
+//	}
 };
 
 template	<typename __float_type, typename __key_type>
