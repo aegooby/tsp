@@ -114,8 +114,13 @@ public:
 	using __base = __graph_private::__graph_base<__float_type, __key_type>;
 	using float_type = typename __base::float_type;
 	using key_type = typename __base::key_type;
+	
 	template	<typename float_type, typename key_type>
 	friend class	tree;
+	template	<typename float_type, typename key_type>
+	friend void	brute_force(tree<float_type, key_type>& tree, graph<float_type, key_type>& graph, const key_type& start);
+	template	<typename float_type, typename key_type>
+	friend void	branch_and_bound(tree<float_type, key_type>& tree, graph<float_type, key_type>& graph, const key_type& start);
 protected:
 	inline __attribute__((always_inline))
 	void	visit(const std::vector<key_type>& keys)

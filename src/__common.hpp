@@ -64,4 +64,15 @@ constexpr size_t	factorial(size_t value)
 	return (!value ? 1 : value * factorial(value - 1));
 }
 
+template	<typename container_type, typename value_type>
+auto	contains(const container_type& container, const value_type& value) -> decltype(container.begin(), container.end(), bool())
+{
+	for (const auto& i : container)
+	{
+		if (i == value)
+			return true;
+	}
+	return false;
+}
+
 __end_ns_tsp

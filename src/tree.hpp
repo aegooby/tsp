@@ -7,7 +7,95 @@
 
 __begin_ns_tsp
 
-enum class	brute_force {  };
+template	<typename float_type, typename key_type>
+void	brute_force(tree<float_type, key_type>& tree, graph<float_type, key_type>& graph, const key_type& start)
+{
+	bool	__done = false;
+	size_t	__size = graph.size();
+	while (!__done)
+	{
+		__done = true;
+		for (auto& node : tree.__nodes)
+		{
+			if (node.leaf() && node.lineage().size() < __size)
+				__done = false;
+		}
+		for (auto& node : tree.__nodes)
+		{
+			if (node.leaf())
+			{
+				graph.visit(node.lineage());
+				for (auto& edge : graph.vertex(node.key()).edges())
+				{
+					if (!edge.second.get().self_edge() && !contains(node.lineage(), edge.second.get().to().key()))
+						tree.add_node(edge.second.get().to().key(), node, edge.second.get().weight());
+				}
+			}
+			graph.clear_visit();
+		}
+	}
+}
+template	<typename float_type, typename key_type>
+void	nearest_neighbor(tree<float_type, key_type>& tree, graph<float_type, key_type>& graph, const key_type& start)
+{
+	auto*	__current = &graph.vertex(start);
+	edge<float_type, key_type>*	__cedge = nullptr;
+	size_t	__size = graph.size();
+	while (tree.size() < __size)
+	{
+		float_type	__minweight = inf<float_type>;
+		for (auto& edge : __current->edges())
+		{
+			if (edge.second.get().weight() < __minweight && !contains(tree.node(tree.size() - 1).lineage(), edge.second.get().to().key()))
+			{
+				__minweight = edge.second.get().weight();
+				__cedge = &edge.second.get();
+			}
+		}
+		if (__minweight == inf<float_type>)
+			throw std::domain_error("No viable path");
+		tree.add_node(__cedge->to().key(), tree.size() - 1, __minweight);
+		__current = &__cedge->to();
+	}
+}
+template	<typename float_type, typename key_type>
+void	branch_and_bound(tree<float_type, key_type>& tree, graph<float_type, key_type>& graph, const key_type& start)
+{
+	tsp::tree<float_type, key_type>	__bound(graph, start, nearest_neighbor<float_type, key_type>);
+	float_type	__upper = inf<float_type>;
+	for (auto& node : __bound.nodes())
+	{
+		if (node.leaf())
+		{
+			__upper = node.lineage_weight();
+		}
+	}
+	
+	bool	__done = false;
+	size_t	__size = graph.size();
+	while (!__done)
+	{
+		__done = true;
+		for (auto& node : tree.__nodes)
+		{
+			if (node.leaf() && node.lineage().size() < __size && node.lineage_weight() < __upper)
+				__done = false;
+		}
+		for (auto& node : tree.__nodes)
+		{
+			if (node.leaf() && node.lineage_weight() < __upper)
+			{
+				graph.visit(node.lineage());
+				for (auto& edge : graph.vertex(node.key()).edges())
+				{
+					if (!edge.second.get().self_edge() && !contains(node.lineage(), edge.second.get().to().key()))
+						tree.add_node(edge.second.get().to().key(), node, edge.second.get().weight());
+				}
+			}
+			graph.clear_visit();
+		}
+	}
+}
 
 template	<typename __float_type, typename __key_type>
 class	__tree_private::__tree_base
@@ -27,6 +115,11 @@ public:
 	{
 		__nodes.reserve(size);
 		__nodes.emplace_back(root_key);
+	}
+	__attribute__((always_inline))
+	size_t	size() const
+	{
+		return __nodes.size();
 	}
 	__attribute__((always_inline))
 	const std::vector<node<float_type, key_type>>&	nodes() const
@@ -87,6 +180,11 @@ public:
 	using __base = __tree_private::__tree_base<__float_type, __key_type>;
 	using float_type = typename __base::float_type;
 	using key_type = typename __base::key_type;
+	
+	template	<typename float_type, typename key_type>
+	friend void	brute_force(tree<float_type, key_type>& tree, graph<float_type, key_type>& graph, const key_type& start);
+	template	<typename float_type, typename key_type>
+	friend void	branch_and_bound(tree<float_type, key_type>& tree, graph<float_type, key_type>& graph, const key_type& start);
 protected:
 	size_t	__nodec_graph(size_t graph_size)
 	{
@@ -101,32 +199,10 @@ protected:
 	}
 public:
 	tree(size_t size, const key_type& root_key) : __base(size, root_key) {  }
-	tree(graph<float_type, key_type>& graph, const key_type& start, brute_force flag) : __base(__nodec_graph(graph.size()), start)
+	template	<typename function_t>
+	tree(graph<float_type, key_type>& graph, const key_type& start, function_t function) : __base(__nodec_graph(graph.size()), start)
 	{
-		bool	__done = false;
-		size_t	__desired = graph.size() - 1;
-		while (!__done)
-		{
-			__done = true;
-			for (auto& node : __base::__nodes)
-			{
-				if (node.leaf() && node.lineage().size() < __desired)
-					__done = false;
-			}
-			for (auto& node : __base::__nodes)
-			{
-				if (node.leaf())
-				{
-					graph.visit(node.lineage());
-					for (auto& edge : graph.vertex(node.key()).edges())
-					{
-						if (!edge.second.get().self_edge())
-							__base::add_node(edge.second.get().to().key(), node, edge.second.get().weight());
-					}
-				}
-				graph.clear_visit();
-			}
-		}
+		function(*this, graph, start);
 	}
 	
 };

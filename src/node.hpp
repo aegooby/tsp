@@ -81,7 +81,7 @@ protected:
 		keys.emplace_back(node.key());
 		__lineage_recur(node.parent(), keys);
 	}
-	void	__lineage_weight_recur(const node<float_type, key_type>& node, float_type& weight)
+	void	__lineage_weight_recur(const node<float_type, key_type>& node, float_type& weight) const
 	{
 		if (node.root())
 		{
