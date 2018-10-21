@@ -5,6 +5,7 @@
 #include	"vertex.hpp"
 #include	"edge.hpp"
 #include	"hash.hpp"
+#include	"array.hpp"
 #include	<list>
 #include	<vector>
 #include	<unordered_map>
@@ -12,13 +13,14 @@
 
 __begin_ns_tsp
 
-template	<typename __float_type, typename __key_type>
+template	<class __derived, typename __float_type, typename __key_type, size_t __size>
 class	__graph_private::__graph_base
 {
 	static_assert(std::is_floating_point_v<__float_type>);
 public:
 	using float_type = __float_type;
 	using key_type = __key_type;
+	using derived = __derived;
 protected:
 	using edge_type = edge<float_type, key_type>;
 	std::unordered_set<edge_type, hash_class<edge_type>>		__edges;
@@ -51,13 +53,36 @@ protected:
 		}
 	}
 public:
-	__graph_base(size_t size)
+	__graph_base()
 	{
-		__vertices.reserve(size);
+		__vertices.reserve(__size);
+	}
+	__graph_base(const table<float_type, __size, __size>& matrix, const array<key_type, __size>& keys)
+	{
+		for (auto& key : keys)
+			add_vertex(key);
+		for (size_t r = 0; r < __size; ++r)
+		{
+			for (size_t c = 0; c < __size; ++c)
+			{
+				if (r != c)
+					__add_one_edge(keys.at(r), keys.at(c), matrix.at(r, c));
+			}
+		}
 	}
 	~__graph_base()
 	{
 		__edges.clear();
+	}
+	__attribute__((always_inline))
+	void	add_edge(const key_type& from_to, const key_type& to_from, float_type weight)
+	{
+		static_cast<derived*>(this)->add_edge(from_to, to_from, weight);
+	}
+	__attribute__((always_inline))
+	void	remove_edge(const key_type& from_to, const key_type& to_from)
+	{
+		static_cast<derived*>(this)->remove_edge(from_to, to_from);
 	}
 	__attribute__((always_inline))
 	const vertex<float_type, key_type>&	vertex(const key_type& key) const
@@ -107,20 +132,20 @@ public:
 	}
 };
 
-template	<typename __float_type, typename __key_type>
-class	graph : public __graph_private::__graph_base<__float_type, __key_type>
+template	<typename __float_type, typename __key_type, size_t __size>
+class	graph : public __graph_private::__graph_base<graph<__float_type, __key_type, __size>, __float_type, __key_type, __size>
 {
 public:
-	using __base = __graph_private::__graph_base<__float_type, __key_type>;
+	using __base = __graph_private::__graph_base<graph, __float_type, __key_type, __size>;
 	using float_type = typename __base::float_type;
 	using key_type = typename __base::key_type;
 	
 	template	<typename float_type, typename key_type>
 	friend class	tree;
-	template	<typename float_type, typename key_type>
-	friend void	brute_force(tree<float_type, key_type>& tree, graph<float_type, key_type>& graph, const key_type& start);
-	template	<typename float_type, typename key_type>
-	friend void	branch_and_bound(tree<float_type, key_type>& tree, graph<float_type, key_type>& graph, const key_type& start);
+	template	<typename float_type, typename key_type, size_t size>
+	friend void	brute_force(tree<float_type, key_type>& tree, graph<float_type, key_type, size>& graph, const key_type& start);
+	template	<typename float_type, typename key_type, size_t size>
+	friend void	branch_and_bound(tree<float_type, key_type>& tree, graph<float_type, key_type, size>& graph, const key_type& start);
 protected:
 	inline __attribute__((always_inline))
 	void	visit(const std::vector<key_type>& keys)
@@ -139,7 +164,8 @@ protected:
 		}
 	}
 public:
-	graph(size_t size) : __base(size) {  }
+	graph() = default;
+	graph(const table<float_type, __size, __size>& matrix, const array<key_type, __size>& keys) : __base(matrix, keys) {  }
 	__attribute__((always_inline))
 	void	add_edge(const key_type& from_to, const key_type& to_from, float_type weight)
 	{
@@ -174,9 +200,9 @@ public:
 		str += "(" + std::to_string(__node->lineage_weight()) + ")\t";
 		for (auto& pt : __node->lineage())
 		{
-			str += std::string(pt) + "< ";
+			str += std::string(pt) + " <- ";
 		}
-		str = str.substr(0, str.length() - 2);
+		str = str.substr(0, str.length() - 4);
 		return str;
 	}
 //	template	<typename function_t>
@@ -204,14 +230,15 @@ public:
 //	}
 };
 
-template	<typename __float_type, typename __key_type>
-class	digraph : public __graph_private::__graph_base<__float_type, __key_type>
+template	<typename __float_type, typename __key_type, size_t __size>
+class	digraph : public __graph_private::__graph_base<digraph<__float_type, __key_type, __size>, __float_type, __key_type, __size>
 {
 public:
-	using __base = __graph_private::__graph_base<__float_type, __key_type>;
+	using __base = __graph_private::__graph_base<digraph, __float_type, __key_type, __size>;
 	using float_type = typename __base::float_type;
 	using key_type = typename __base::key_type;
-	digraph(size_t size) : __base(size) {  }
+	digraph() = default;
+	digraph(const table<float_type, __size, __size>& matrix) : __base(matrix) {  }
 	__attribute__((always_inline))
 	void	add_edge(const key_type& from, const key_type& to, float_type weight)
 	{

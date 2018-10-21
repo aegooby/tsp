@@ -37,18 +37,18 @@ class	vertex;
 class	__graph_private
 {
 private:
-	template	<typename float_type, typename key_type>
+	template	<class derived, typename float_type, typename key_type, size_t size>
 	class	__graph_base;
 public:
-	template	<typename float_type, typename key_type>
+	template	<typename float_type, typename key_type, size_t size>
 	friend class	graph;
-	template	<typename float_type, typename key_type>
+	template	<typename float_type, typename key_type, size_t size>
 	friend class	digraph;
 };
 
-template	<typename float_type, typename key_type>
+template	<typename float_type, typename key_type, size_t size>
 class	graph;
-template	<typename float_type, typename key_type>
+template	<typename float_type, typename key_type, size_t size>
 class	digraph;
 
 class	__node_private
@@ -62,7 +62,7 @@ public:
 };
 
 template	<typename float_type, typename key_type>
-class node;
+class	node;
 
 class	__tree_private
 {
@@ -77,5 +77,14 @@ public:
 
 template	<typename float_type, typename key_type>
 class	tree;
+
+template	<typename value_type, size_t size>
+class	array;
+template	<typename value_type, size_t size>
+class	st_array;
+template	<typename value_type, size_t rows, size_t cols>
+class	table;
+template	<typename value_type, size_t rows, size_t cols>
+class	st_table;
 
 __end_ns_tsp

@@ -7,8 +7,8 @@
 
 __begin_ns_tsp
 
-template	<typename float_type, typename key_type>
-void	brute_force(tree<float_type, key_type>& tree, graph<float_type, key_type>& graph, const key_type& start)
+template	<typename float_type, typename key_type, size_t size>
+void	brute_force(tree<float_type, key_type>& tree, graph<float_type, key_type, size>& graph, const key_type& start)
 {
 	bool	__done = false;
 	size_t	__size = graph.size();
@@ -35,8 +35,8 @@ void	brute_force(tree<float_type, key_type>& tree, graph<float_type, key_type>& 
 		}
 	}
 }
-template	<typename float_type, typename key_type>
-void	nearest_neighbor(tree<float_type, key_type>& tree, graph<float_type, key_type>& graph, const key_type& start)
+template	<typename float_type, typename key_type, size_t size>
+void	nearest_neighbor(tree<float_type, key_type>& tree, graph<float_type, key_type, size>& graph, const key_type& start)
 {
 	auto*	__current = &graph.vertex(start);
 	edge<float_type, key_type>*	__cedge = nullptr;
@@ -58,10 +58,10 @@ void	nearest_neighbor(tree<float_type, key_type>& tree, graph<float_type, key_ty
 		__current = &__cedge->to();
 	}
 }
-template	<typename float_type, typename key_type>
-void	branch_and_bound(tree<float_type, key_type>& tree, graph<float_type, key_type>& graph, const key_type& start)
+template	<typename float_type, typename key_type, size_t size>
+void	branch_and_bound(tree<float_type, key_type>& tree, graph<float_type, key_type, size>& graph, const key_type& start)
 {
-	tsp::tree<float_type, key_type>	__bound(graph, start, nearest_neighbor<float_type, key_type>);
+	tsp::tree<float_type, key_type>	__bound(graph, start, nearest_neighbor<float_type, key_type, size>);
 	float_type	__upper = inf<float_type>;
 	for (auto& node : __bound.nodes())
 	{
@@ -181,10 +181,10 @@ public:
 	using float_type = typename __base::float_type;
 	using key_type = typename __base::key_type;
 	
-	template	<typename float_type, typename key_type>
-	friend void	brute_force(tree<float_type, key_type>& tree, graph<float_type, key_type>& graph, const key_type& start);
-	template	<typename float_type, typename key_type>
-	friend void	branch_and_bound(tree<float_type, key_type>& tree, graph<float_type, key_type>& graph, const key_type& start);
+	template	<typename float_type, typename key_type, size_t size>
+	friend void	brute_force(tree<float_type, key_type>& tree, graph<float_type, key_type, size>& graph, const key_type& start);
+	template	<typename float_type, typename key_type, size_t size>
+	friend void	branch_and_bound(tree<float_type, key_type>& tree, graph<float_type, key_type, size>& graph, const key_type& start);
 protected:
 	size_t	__nodec_graph(size_t graph_size)
 	{
@@ -199,8 +199,8 @@ protected:
 	}
 public:
 	tree(size_t size, const key_type& root_key) : __base(size, root_key) {  }
-	template	<typename function_t>
-	tree(graph<float_type, key_type>& graph, const key_type& start, function_t function) : __base(__nodec_graph(graph.size()), start)
+	template	<typename function_t, size_t size>
+	tree(graph<float_type, key_type, size>& graph, const key_type& start, function_t function) : __base(__nodec_graph(graph.size()), start)
 	{
 		function(*this, graph, start);
 	}

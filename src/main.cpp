@@ -9,18 +9,27 @@ int	main(int argc, char** argv)
 {
 	try
 	{
-		tsp::graph<float, std::string>	graph(12);
-		graph.add_vertex("0");
-		graph.add_vertex("1");
-		graph.add_vertex("2");
-		graph.add_vertex("3");
-		graph.add_edge("0", "1", 55);
-		graph.add_edge("0", "2", 10);
-		graph.add_edge("0", "3", 13);
-		graph.add_edge("1", "2", 45);
-		graph.add_edge("1", "3", 2);
-		graph.add_edge("2", "3", 8);
-		std::cout << graph.tsp("0", tsp::branch_and_bound<float, std::string>) << std::endl;
+		tsp::table<float, 12, 12>	matrix =
+		{
+			0,   277, 273, 257, 152, 127, 481, 737, 766, 275, 481, 242,
+			277, 0,   181, 118, 178, 161, 261, 149, 70,  236, 181, 231,
+			273, 181, 0,   93,  147, 121, 173, 152, 232, 255, 131, 67,
+			257, 118, 93,  0,   135, 301, 147, 88,  204, 147, 114, 147,
+			152, 178, 147, 135, 0,   161, 155, 183, 205, 200, 191, 216,
+			127, 161, 121, 301, 161, 0,   175, 195, 271, 229, 196, 234,
+			481, 261, 173, 147, 155, 175, 0,   152, 224, 189, 191, 61,
+			737, 149, 152, 88,  183, 195, 152, 0,   176, 232, 294, 242,
+			766, 70,  232, 204, 205, 271, 224, 176, 0,   153, 286, 222,
+			275, 236, 255, 147, 200, 229, 189, 232, 153, 0,   184, 283,
+			481, 181, 131, 114, 191, 196, 191, 294, 286, 184, 0,   92,
+			242, 231, 67,  147, 216, 234, 61,  242, 222, 283, 92,  0,
+		};
+		tsp::array<std::string, 12>	keys =
+		{
+			"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+		};
+		tsp::graph<float, std::string, 12>	graph(matrix, keys);
+		std::cout << graph.tsp("0", tsp::branch_and_bound<float, std::string, 12>) << std::endl;
 	}
 	catch(std::exception& exception)
 	{

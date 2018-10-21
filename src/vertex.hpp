@@ -73,7 +73,7 @@ protected:
 public:
 	template	<typename float_type, typename key_type>
 	friend class	edge;
-	template	<typename float_type, typename key_type>
+	template	<typename float_type, typename key_type, size_t size>
 	friend class	graph;
 	template	<typename float_type, typename key_type>
 	friend class	tree;

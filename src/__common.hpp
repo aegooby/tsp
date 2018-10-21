@@ -86,3 +86,5 @@ template	<typename type>
 constexpr bool	is_stringy_v = is_stringy<type>::value;
 
 __end_ns_tsp
+
+#include	"x86i.hpp"

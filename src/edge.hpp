@@ -14,9 +14,9 @@ class	__edge_private::__edge_base
 public:
 	using float_type = __float_type;
 	using key_type = __key_type;
-	template	<typename float_type, typename key_type>
+	template	<class derived, typename float_type, typename key_type, size_t size>
 	friend class	__graph_private::__graph_base;
-	template	<typename float_type, typename key_type>
+	template	<typename float_type, typename key_type, size_t>
 	friend class	graph;
 protected:
 	using vertex_ref = vertex<float_type, key_type>&;
@@ -91,9 +91,9 @@ public:
 	using float_type = typename __base::float_type;
 	using key_type = typename __base::key_type;
 	using vertex_ref = typename __base::vertex_ref;
-	template	<typename float_type, typename key_type>
+	template	<class derived, typename float_type, typename key_type, size_t size>
 	friend class	__graph_private::__graph_base;
-	template	<typename float_type, typename key_type>
+	template	<typename float_type, typename key_type, size_t size>
 	friend class	graph;
 protected:
 	using pair_ref = std::pair<vertex_ref, vertex_ref>&;
