@@ -29,7 +29,7 @@ int	main(int argc, char** argv)
 			"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
 		};
 		tsp::graph<float, std::string, 12>	graph(matrix, keys);
-		std::cout << graph.tsp("0", tsp::branch_and_bound<float, std::string, 12>) << std::endl;
+		std::cout << graph.tsp("0", tsp::nearest_neighbor<float, std::string, 12>) << std::endl;
 	}
 	catch(std::exception& exception)
 	{

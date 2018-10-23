@@ -10,8 +10,8 @@ __begin_ns_tsp
 template	<typename float_type, typename key_type, size_t size>
 void	brute_force(tree<float_type, key_type>& tree, graph<float_type, key_type, size>& graph, const key_type& start)
 {
-	bool	__done = false;
-	size_t	__size = graph.size();
+	bool		__done = false;
+	size_t		__size = graph.size();
 	while (!__done)
 	{
 		__done = true;
@@ -28,19 +28,28 @@ void	brute_force(tree<float_type, key_type>& tree, graph<float_type, key_type, s
 				for (auto& edge : graph.vertex(node.key()).edges())
 				{
 					if (!edge.second.get().self_edge() && !contains(node.lineage(), edge.second.get().to().key()))
+					{
 						tree.add_node(edge.second.get().to().key(), node, edge.second.get().weight());
+					}
 				}
 			}
 			graph.clear_visit();
+		}
+	}
+	for (auto& node : tree.__nodes)
+	{
+		if (node.leaf())
+		{
+			tree.add_node(start, node, graph.edge(node.key(), start).weight());
 		}
 	}
 }
 template	<typename float_type, typename key_type, size_t size>
 void	nearest_neighbor(tree<float_type, key_type>& tree, graph<float_type, key_type, size>& graph, const key_type& start)
 {
-	auto*	__current = &graph.vertex(start);
+	auto*		__current = &graph.vertex(start);
 	edge<float_type, key_type>*	__cedge = nullptr;
-	size_t	__size = graph.size();
+	size_t		__size = graph.size();
 	while (tree.size() < __size)
 	{
 		float_type	__minweight = inf<float_type>;
@@ -57,12 +66,20 @@ void	nearest_neighbor(tree<float_type, key_type>& tree, graph<float_type, key_ty
 		tree.add_node(__cedge->to().key(), tree.size() - 1, __minweight);
 		__current = &__cedge->to();
 	}
+	for (auto& node : tree.__nodes)
+	{
+		if (node.leaf())
+		{
+			tree.add_node(start, tree.size() - 1, graph.edge(node.key(), start).weight());
+		}
+	}
 }
 template	<typename float_type, typename key_type, size_t size>
 void	branch_and_bound(tree<float_type, key_type>& tree, graph<float_type, key_type, size>& graph, const key_type& start)
 {
 	tsp::tree<float_type, key_type>	__bound(graph, start, nearest_neighbor<float_type, key_type, size>);
 	float_type	__upper = inf<float_type>;
+	key_type	__final = key_type();
 	for (auto& node : __bound.nodes())
 	{
 		if (node.leaf())
@@ -93,6 +110,13 @@ void	branch_and_bound(tree<float_type, key_type>& tree, graph<float_type, key_ty
 				}
 			}
 			graph.clear_visit();
+		}
+	}
+	for (auto& node : tree.__nodes)
+	{
+		if (node.leaf() && node.lineage().size() == __size)
+		{
+			tree.add_node(start, node, graph.edge(node.key(), start).weight());
 		}
 	}
 }
@@ -183,6 +207,8 @@ public:
 	
 	template	<typename float_type, typename key_type, size_t size>
 	friend void	brute_force(tree<float_type, key_type>& tree, graph<float_type, key_type, size>& graph, const key_type& start);
+	template	<typename float_type, typename key_type, size_t size>
+	friend void	nearest_neighbor(tree<float_type, key_type>& tree, graph<float_type, key_type, size>& graph, const key_type& start);
 	template	<typename float_type, typename key_type, size_t size>
 	friend void	branch_and_bound(tree<float_type, key_type>& tree, graph<float_type, key_type, size>& graph, const key_type& start);
 protected:

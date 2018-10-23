@@ -191,12 +191,14 @@ public:
 		tsp::node<float_type, key_type>*	__node = nullptr;
 		for (auto& node : tree.nodes())
 		{
-			if (node.leaf() && node.lineage().size() == __base::size() && node.lineage_weight() < __minweight)
+			if (node.leaf() && node.lineage().size() == __base::size() + 1 && node.lineage_weight() < __minweight)
 			{
 				__minweight = node.lineage_weight();
 				__node = const_cast<tsp::node<float_type, key_type>*>(&node);
 			}
 		}
+		if (!__node)
+			throw std::runtime_error("No solution found");
 		str += "(" + std::to_string(__node->lineage_weight()) + ")\t";
 		for (auto& pt : __node->lineage())
 		{
