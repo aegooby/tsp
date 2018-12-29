@@ -49,6 +49,11 @@ public:
 		return __edges;
 	}
 	__attribute__((always_inline))
+	size_t	degree() const
+	{
+		return __edges.size();
+	}
+	__attribute__((always_inline))
 	bool	linked() const
 	{
 		return bool(__edges.size());

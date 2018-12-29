@@ -119,6 +119,7 @@ void	branch_and_bound(tree<float_type, key_type>& tree, graph<float_type, key_ty
 			tree.add_node(start, node, graph.edge(node.key(), start).weight());
 		}
 	}
+	std::cout << tree.size() << std::endl;
 }
 
 template	<typename __float_type, typename __key_type>
@@ -215,7 +216,7 @@ protected:
 	size_t	__nodec_graph(size_t graph_size)
 	{
 		size_t	__res = 1, __term = 1;
-		for (size_t __sz = graph_size - 1; __sz > 1; --__sz)
+		for (size_t __sz = graph_size - 1; __sz > 0; --__sz)
 		{
 			__term *= __sz;
 			__res += __term;

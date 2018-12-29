@@ -1,11 +1,11 @@
 
 #include	"__common.hpp"
 #include	"graph.hpp"
-#include	"tsp_brute.hpp"
 #include	"hash.hpp"
 #include	"tree.hpp"
+#include	"clock.hpp"
 
-int	main(int argc, char** argv)
+void	real()
 {
 	try
 	{
@@ -29,13 +29,21 @@ int	main(int argc, char** argv)
 			"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
 		};
 		tsp::graph<float, std::string, 12>	graph(matrix, keys);
+		tsp::clock	clock;
+		clock.reset();
 		std::cout << graph.tsp("0", tsp::nearest_neighbor<float, std::string, 12>) << std::endl;
+		std::cout << clock.time_s() << std::endl;
 	}
 	catch(std::exception& exception)
 	{
 		std::cout << exception.what() << std::endl;
-		return 1;
+		exit(1);
 	}
+}
+
+int	main(int argc, char** argv)
+{
+	real();
 	
 	return 0;
 }
