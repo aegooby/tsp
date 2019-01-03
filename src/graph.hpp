@@ -107,6 +107,11 @@ public:
 		return __vertices.size();
 	}
 	__attribute__((always_inline))
+	auto&	edges()
+	{
+		return __edges;
+	}
+	__attribute__((always_inline))
 	const auto&	edges() const
 	{
 		return __edges;
@@ -139,6 +144,7 @@ public:
 	using __base = __graph_private::__graph_base<graph, __float_type, __key_type, __size>;
 	using float_type = typename __base::float_type;
 	using key_type = typename __base::key_type;
+	using self_type = graph<float_type, key_type, __size>;
 	
 	template	<typename float_type, typename key_type>
 	friend class	tree;
@@ -231,6 +237,32 @@ public:
 //		return str;
 //	}
 };
+
+template	<typename float_type, typename key_type, size_t size>
+void	mst(graph<float_type, key_type, size>& source, graph<float_type, key_type, size>& tree)
+{
+	std::vector<std::reference_wrapper<edge<float_type, key_type>>>	edges;
+	for (auto& edge : source.edges())
+	{
+		edges.emplace_back(const_cast<tsp::edge<float_type, key_type>&>(edge));
+	}
+	std::sort(edges.begin(), edges.end(),
+			  [](tsp::edge<float_type, key_type>& __a, tsp::edge<float_type, key_type>& __b)
+			  {
+				  return __a.weight() < __b.weight();
+			  });
+	for (auto& vertex : source.vertices())
+	{
+		tree.add_vertex(vertex.second.key());
+	}
+	for (auto& edge : edges)
+	{
+		if (!tree.vertex(edge.get().from().key()).degree() || !tree.vertex(edge.get().to().key()).degree())
+		{
+			tree.add_edge(edge.get().from().key(), edge.get().to().key(), edge.get().weight());
+		}
+	}
+}
 
 template	<typename __float_type, typename __key_type, size_t __size>
 class	digraph : public __graph_private::__graph_base<digraph<__float_type, __key_type, __size>, __float_type, __key_type, __size>
