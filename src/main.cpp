@@ -29,11 +29,10 @@ void	real()
 			"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
 		};
 		tsp::graph<float, std::string, 12>	graph(matrix, keys);
-		tsp::graph<float, std::string, 12>	mst;
 		tsp::clock	clock;
 		clock.reset();
 		
-		tsp::mst(graph, mst);
+		tsp::two_opt(graph, std::string("0"));
 		
 		std::cout << clock.time_s() << std::endl;
 	}

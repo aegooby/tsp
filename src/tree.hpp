@@ -122,6 +122,82 @@ void	branch_and_bound(tree<float_type, key_type>& tree, graph<float_type, key_ty
 	std::cout << tree.size() << std::endl;
 }
 
+template	<typename key_type>
+std::vector<key_type>	__two_opt_swap(std::vector<key_type>& __tour, size_t __xi, size_t __yi, const key_type& start)
+{
+	const key_type&	__x = __tour.at(__xi);
+	const key_type& __y = __tour.at(__yi);
+	if (__x == start || __y == start)
+		throw std::runtime_error("Vertices x and y cannot be start vertex");
+	std::vector<key_type>	__temp;
+	size_t	__size = __tour.size();
+	if (!__yi || !__xi)
+		throw std::runtime_error("Could not find indices of x and y.");
+	if (!(__yi > __xi))
+		throw std::runtime_error("Invalid comparative indices of x and y");
+	for (size_t i = 0; i < __xi; ++i)
+		__temp.push_back(__tour.at(i));
+	for (size_t i = __yi; i >= __xi; --i)
+		__temp.push_back(__tour.at(i));
+	for (size_t i = __yi + 1; i < __size; ++i)
+		__temp.push_back(__tour.at(i));
+	return __temp;
+}
+
+template	<typename float_type, typename key_type, size_t size>
+size_t	__tour_cost(const std::vector<key_type>& __tour, const graph<float_type, key_type, size>& __graph)
+{
+	size_t	__cost = 0;
+	for (size_t i = 0; i < __tour.size() - 1; ++i)
+	{
+		__cost += __graph.edge(__tour.at(i), __tour.at(i + 1)).weight();
+	}
+	return __cost;
+}
+
+template	<typename float_type, typename key_type, size_t size>
+void	two_opt(graph<float_type, key_type, size>& graph, const key_type& start)
+{
+	std::vector<key_type>	tour;
+	tour.push_back(start);
+	for (auto& vertex : graph.vertices())
+	{
+		if (vertex.second.key() != start)
+			tour.push_back(vertex.second.key());
+	}
+	tour.push_back(start);
+	size_t	__size = tour.size();
+	size_t	__new_cost = __tour_cost(tour, graph), __best_cost = 0;
+	do
+	{
+		__best_cost = __new_cost;
+		for (size_t __xi = 1; __xi < __size - 1; ++__xi)
+		{
+			for (size_t __yi = 1; __yi < __size - 1; ++__yi)
+			{
+				if (__yi > __xi)
+				{
+					auto	__swapped = __two_opt_swap(tour, __xi, __yi, start);
+					if (__tour_cost(__swapped, graph) < __best_cost)
+					{
+						tour = __swapped;
+						__new_cost = __tour_cost(__swapped, graph);
+					}
+				}
+			}
+		}
+	}
+	while (__new_cost < __best_cost);
+	std::string	__out;
+	for (auto& i : tour)
+	{
+		__out += i + " -> ";
+	}
+	__out = __out.substr(0, __out.length() - 3);
+	std::cout << __out << std::endl;
+	std::cout << __new_cost << std::endl;
+}
+
 template	<typename __float_type, typename __key_type>
 class	__tree_private::__tree_base
 {
